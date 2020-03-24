@@ -19,6 +19,8 @@ import EmptyState from "components/EmptyState";
 import StyledCard from "components/StyledCard";
 import CreateTableDialog from "components/CreateTableDialog";
 
+import UpstreetLogo from "assets/upstreet-logo.svg";
+
 import routes from "constants/routes";
 import { useFiretableContext } from "contexts/firetableContext";
 
@@ -76,7 +78,7 @@ const TablesView = () => {
       <AppBar />
 
       <Container>
-        {(!userClaims?.roles || userClaims.roles.length === 0) && (
+        {/* {(!userClaims?.roles || userClaims.roles.length === 0) && (
           <EmptyState
             Icon={SecurityIcon}
             message={"You don't have any permissions specified"}
@@ -98,7 +100,9 @@ const TablesView = () => {
               </>
             }
           />
-        )}
+        )} */}
+
+        <img src={UpstreetLogo} width="262" height="60" alt="Upstreet" />
 
         {sections ? (
           Object.keys(sections).map(sectionName => (
