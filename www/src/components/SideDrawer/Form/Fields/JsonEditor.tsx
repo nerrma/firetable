@@ -1,6 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { FieldProps } from "formik";
-//import ReactJson from "react-json-view";
+import ReactJson from "react-json-view";
 import Table from "@material-ui/core/Table";
 import TableBody from "@material-ui/core/TableBody";
 import TableCell from "@material-ui/core/TableCell";
@@ -12,9 +12,14 @@ import Tooltip from "@material-ui/core/Tooltip";
 //import Fab from '@material-ui/core/Fab';
 import EditIcon from "@material-ui/icons/Edit";
 import DoneIcon from "@material-ui/icons/Done";
-import { makeStyles, createStyles, withStyles } from "@material-ui/core";
-//import { TextField } from "formik-material-ui";
+import {
+  makeStyles,
+  createStyles,
+  withStyles,
+  useTheme,
+} from "@material-ui/core";
 import TextField from "@material-ui/core/TextField";
+import Autosave from "../Autosave";
 
 const StyledTableCell = withStyles(theme => ({
   head: {
@@ -49,11 +54,24 @@ const useStyles = makeStyles(theme =>
   })
 );
 
+const isValidJson = (val: any) => {
+  try {
+    if (typeof val === "string") JSON.parse(val);
+    else JSON.stringify(val);
+  } catch (error) {
+    return false;
+  }
+  return true;
+};
+
 const CustomRow = ({ val, field, form, shareVal }) => {
   const [isEditing, setisEditing] = useState(false);
   const [shares, setShares] = useState(shareVal);
+  const [save, setSave] = useState(false);
+  //const [save] = Autosave(field.value);
 
   const handleEdit = () => {
+    setSave(false);
     setisEditing(true);
   };
 
@@ -61,22 +79,48 @@ const CustomRow = ({ val, field, form, shareVal }) => {
     setShares(e.target.value);
   };
 
-  const finalEdit = name => {
+  const finalEdit = retailerID => {
     setisEditing(false);
     if (!isNaN(shares)) {
-      let temp = { ...field.value };
-      temp[name].shareTotal = shares * Math.pow(10, 8);
-      form.setFieldValue(field.name, JSON.parse(JSON.stringify(temp)));
+      //newval[retailerName].shareTotal = shares * Math.pow(10,8);
+      let newval = {
+        F63YLxlqsllN3Ry2tnZl: {
+          shareTotal: field.value["F63YLxlqsllN3Ry2tnZl"]
+            ? field.value["F63YLxlqsllN3Ry2tnZl"].shareTotal
+            : 0,
+        },
+
+        dvJFrauoNHljAE4Gs6C4: {
+          shareTotal: field.value["dvJFrauoNHljAE4Gs6C4"]
+            ? field.value["dvJFrauoNHljAE4Gs6C4"].shareTotal
+            : 0,
+        },
+
+        knKgDArbnBHAe8t0Hgyv: {
+          shareTotal: field.value["knKgDArbnBHAe8t0Hgyv"]
+            ? field.value["knKgDArbnBHAe8t0Hgyv"].shareTotal
+            : 0,
+        },
+      };
+
+      newval[retailerID].shareTotal = shares * Math.pow(10, 8);
+
+      console.log("Field value ", field.value);
+      console.log("New value ", newval);
+      form.setFieldValue(field.name, newval);
+
+      //form.setFieldValue(field.value.retailerName, newval);
 
       console.trace();
       console.log("Field: ", field);
       console.log("Form: ", form);
+      setSave(true);
     } else {
       setShares(shareVal);
     }
   };
   console.log("value: " + JSON.stringify(val));
-  let retailer;
+  let retailer = val[0];
 
   switch (val[0]) {
     case "F63YLxlqsllN3Ry2tnZl":
@@ -92,6 +136,7 @@ const CustomRow = ({ val, field, form, shareVal }) => {
 
   return (
     <TableRow>
+      {save === true && <Autosave values={form.values} errors={form.errors} />}
       <TableCell component="th" scope="row">
         {retailer}
       </TableCell>
@@ -114,44 +159,88 @@ const CustomRow = ({ val, field, form, shareVal }) => {
           </Tooltip>
         ) : (
           <Tooltip title="Edit">
-            <EditIcon onClick={e => handleEdit()} />
+            <EditIcon onClick={() => handleEdit()} />
           </Tooltip>
         )}
       </TableCell>
     </TableRow>
   );
 };
+
+const HoldingsEditor = ({ form, field }) => {
+  const classes = useStyles();
+  return (
+    <TableContainer component={Paper}>
+      <Table className={classes.table} aria-label="simple table">
+        <TableHead>
+          <TableRow>
+            <StyledTableCell>Company</StyledTableCell>
+            <StyledTableCell align="right">Total Shares</StyledTableCell>
+            <StyledTableCell align="right"></StyledTableCell>
+          </TableRow>
+        </TableHead>
+        <TableBody>
+          {Object.entries(field.value).map((val: any, index) => {
+            return (
+              <CustomRow
+                field={field}
+                form={form}
+                val={val}
+                key={index}
+                shareVal={val[1].shareTotal / Math.pow(10, 8)}
+              />
+            );
+          })}
+        </TableBody>
+      </Table>
+    </TableContainer>
+  );
+};
+
 export default function JsonEditor({ form, field }: FieldProps) {
   const classes = useStyles();
-  //   form.setFieldValue(field.name, edit.updated_src);
-  // };
+  const theme = useTheme();
+
+  const handleEdit = edit => {
+    form.setFieldValue(field.name, edit.updated_src);
+  };
 
   return (
     <div className={classes.root}>
-      <TableContainer component={Paper}>
-        <Table className={classes.table} aria-label="simple table">
-          <TableHead>
-            <TableRow>
-              <StyledTableCell>Company</StyledTableCell>
-              <StyledTableCell align="right">Total Shares</StyledTableCell>
-              <StyledTableCell align="right"></StyledTableCell>
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {Object.entries(field.value).map((val: any, index) => {
-              return (
-                <CustomRow
-                  field={field}
-                  form={form}
-                  val={val}
-                  key={index}
-                  shareVal={val[1].shareTotal / Math.pow(10, 8)}
-                />
-              );
-            })}
-          </TableBody>
-        </Table>
-      </TableContainer>
+      {field.name === "holdings" ? (
+        <HoldingsEditor form={form} field={field} />
+      ) : (
+        <ReactJson
+          src={isValidJson(field.value) ? field.value : {}}
+          onEdit={handleEdit}
+          onAdd={handleEdit}
+          onDelete={handleEdit}
+          theme={{
+            base00: "rgba(0, 0, 0, 0)",
+            base01: theme.palette.background.default,
+            base02: theme.palette.divider,
+            base03: "#93a1a1",
+            base04: theme.palette.text.disabled,
+            base05: theme.palette.text.secondary,
+            base06: "#073642",
+            base07: theme.palette.text.primary,
+            base08: "#d33682",
+            base09: "#cb4b16",
+            base0A: "#dc322f",
+            base0B: "#859900",
+            base0C: "#6c71c4",
+            base0D: theme.palette.text.secondary,
+            base0E: "#2aa198",
+            base0F: "#268bd2",
+          }}
+          iconStyle="triangle"
+          style={{
+            fontFamily:
+              "SFMono-Regular,Consolas,Liberation Mono,Menlo,monospace",
+            backgroundColor: "transparent",
+          }}
+        />
+      )}
     </div>
   );
 }

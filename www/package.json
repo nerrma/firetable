@@ -38,6 +38,8 @@
     "query-string": "^6.8.3",
     "ramda": "^0.26.1",
     "react": "^16.9.0",
+    "react-bootstrap-table-next": "^4.0.0",
+    "react-bootstrap-table2-editor": "^1.4.0",
     "react-color": "^2.17.3",
     "react-data-grid": "^7.0.0-alpha.29",
     "react-data-grid-addons": "^7.0.0-alpha.24",

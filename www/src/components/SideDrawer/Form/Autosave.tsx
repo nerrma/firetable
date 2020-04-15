@@ -48,6 +48,11 @@ export default function Autosave({ values, errors }: IAutosaveProps) {
       _ft_updatedBy,
       updatedBy: _ft_updatedBy,
     });
+    console.log(
+      "%c Autosaving...",
+      "color: green; font-weight: bold; background-color: black;"
+    );
+    console.trace();
   }, [debouncedValue]);
 
   return null;
